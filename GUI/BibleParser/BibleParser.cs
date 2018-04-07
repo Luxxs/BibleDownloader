@@ -1,5 +1,4 @@
 ﻿using GUI.BibleReader;
-using Sword;
 using Sword.versification;
 using System;
 using System.Collections.Generic;
@@ -39,13 +38,13 @@ namespace GUI.BibleParser
 			ChapterPosition versesPositionsForChapter = chapterPositions[book.VersesInChapterStartIndex + chapterNumber];
 
 			byte[] chapterBytes = await bibleLoader.GetChapterBytesAsync(book.VersesInChapterStartIndex + chapterNumber, chapterPositions);
-			var versePositions = new List<long>();
+			var usedVersePositions = new List<long>();
 			foreach (VersePosition versePosition in versesPositionsForChapter.Verses)
 			{
 				// in some commentaries, the verses repeat. Stop these repeats from comming in!
-				if (!versePositions.Contains(versePosition.StartPosition))
+				if (!usedVersePositions.Contains(versePosition.StartPosition))
 				{
-					versePositions.Add(versePosition.StartPosition);
+					usedVersePositions.Add(versePosition.StartPosition);
 					var verse = ParseOsisVerseSimplified(chapterBytes, (int)versePosition.StartPosition, versePosition.Length, false);
 					chapter.Verses.Add(verse);
 				}
@@ -90,7 +89,6 @@ namespace GUI.BibleParser
 			using (var verseXml = new MemoryStream())
 			{
 				InsertXmlPrefixIntoStream(verseXml, isIsoText);
-				chapterBytes = FixEtcetera(verseXml, chapterBytes); // TODO: Do it for whole chapter not for every verse
 				verseXml.Write(chapterBytes, verseStartPosition, verseLength);
 				InsertXmlSuffixIntoStream(verseXml);
 				verseXml.Position = 0;
@@ -161,6 +159,7 @@ namespace GUI.BibleParser
 												elements.Peek().Text += "\n";
 											break;
 										case "p":
+											// TODO: Don't insert text into this element
 											elements.Push(new ParagraphSeparator());
 											break;
 
@@ -174,11 +173,6 @@ namespace GUI.BibleParser
 										case "q":
 										case "w":// <w lemma="strong:G1078" morph="robinson:N-GSF">γενεσεως</w>
 												 // Don't know what is this for
-											break;
-
-										default:
-											//AppendText(" ", plainText, noteText, isInElement);
-											//Debug.WriteLine("Element untreated: " + reader.Name);
 											break;
 									}
 									break;
@@ -250,6 +244,7 @@ namespace GUI.BibleParser
 			stream.Write(xmlPrefix, 0, xmlPrefix.Length);
 		}
 
+		// TODO: Use it in some HTML renderer
 		byte[] FixEtcetera(Stream stream, byte[] chapterBytes)
 		{
 			//unfortunately "&c." means "etcetera" in old english
