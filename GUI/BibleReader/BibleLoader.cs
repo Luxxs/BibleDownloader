@@ -164,6 +164,7 @@ namespace GUI.BibleReader
             return buf[1] * 0x100 + buf[0];
         }
 
+
 		public async Task<byte[]> GetChapterBytes(int absoluteChapterNumber, List<ChapterPosition> chapterPositions)
         {
             ChapterPosition versesPositionsForChapter = chapterPositions[absoluteChapterNumber];
@@ -227,8 +228,9 @@ namespace GUI.BibleReader
 
 		bool IsChapterInOldTestament(int absoluteChapterNumber)
 		{
-			var lastBookInOldTestament = Canon.OldTestBooks.Last();
-			return absoluteChapterNumber < lastBookInOldTestament.NumberOfChapters + lastBookInOldTestament.VersesInChapterStartIndex;
+			CanonBookDef lastBookInOldTestament = Canon.OldTestBooks.Last();
+			int lastChapterAbsoluteNumber = lastBookInOldTestament.VersesInChapterStartIndex;
+			return absoluteChapterNumber < lastChapterAbsoluteNumber + lastBookInOldTestament.NumberOfChapters;
 		}
 	}
 }

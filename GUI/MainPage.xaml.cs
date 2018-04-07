@@ -2,7 +2,6 @@
 using ICSharpCode.SharpZipLib.Tar;
 using Sword;
 using Sword.reader;
-using Sword.versification;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -47,7 +46,7 @@ namespace GUI
             }
             var bibleKralicka = metadatas.Find(x => x.InternalName == "czebkr");
             await DownloadBookAsync(bibleKralicka);
-            string genesis1 = await ReadChapterAsync("czebkr", "Gen", 0);
+            string genesis1 = await ReadChapterAsync("czebkr", "Matt", 0);
         }
 
         List<SwordBookMetaData> GetMetaDatasFromStream(GZipStream gzipStream)
