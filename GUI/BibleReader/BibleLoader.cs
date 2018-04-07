@@ -1,47 +1,55 @@
 ﻿using Ionic.Zlib;
-using Sword.reader;
+using Sword;
 using Sword.versification;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace GUI.BibleReader
 {
-    class BibleLoader
-    {
-        // Load book positions from versification file
-        public async Task<List<ChapterPosition>> LoadVersePositionsAsync(string bookPath, string fileName, int startBookIndex, int endBookIndex, CanonBookDef[] booksInFile, Canon canon)
+	class BibleLoader
+	{
+		public Canon Canon { get; }
+		readonly string bookPath;
+
+		public BibleLoader(SwordBookMetaData swordBookMetadata)
+		{
+			bookPath = swordBookMetadata.GetCetProperty(ConfigEntryType.ADataPath).ToString().Substring(2).Replace("/", "\\"); // Remove "./" on the beginning, change '/' to '\'
+			string versification = swordBookMetadata.GetCetProperty(ConfigEntryType.Versification) as string;
+			Canon = CanonManager.GetCanon(versification);
+		}
+
+		// Load book positions from versification file
+		public async Task<List<ChapterPosition>> LoadVersePositionsAsync(Testament testament)
         {
-            List<BookPosition> bookPositions = await LoadBookPositionsAsync(bookPath, fileName);
-            string filePath = bookPath.Replace("/", "\\") + fileName + "." + ((char)IndexingBlockType.Book) + "zv";
-            using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
+			string bzsFilePath = CreateBzsFilePath(bookPath, testament, IndexingBlockType.Book);
+			List<BookPosition> bookPositions = await LoadBookPositionsAsync(bzsFilePath);
+
+			CanonBookDef[] booksInFile = testament == Testament.Old ? Canon.OldTestBooks : Canon.NewTestBooks;
+
+			string filePath = CreateVersificationFilePath(bookPath, testament, IndexingBlockType.Book);
+			using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
             {
                 for (int i = 0; i < 4; i++)
                     DumpPost(fileStream);
 
                 List<ChapterPosition> chapters = new List<ChapterPosition>();
-                for (int bookIndex = startBookIndex; bookIndex < endBookIndex; bookIndex++)
+				for (int bookIndex = 0; bookIndex < booksInFile.Length; bookIndex++)
                 {
-                    int bookIndexInCanon = bookIndex - startBookIndex;
-                    int bookNumber = bookIndex - startBookIndex + 1;
-                    long bookStartPosition = bookNumber < bookPositions.Count ? bookPositions[bookNumber].StartPosition : 0;
+                    long bookStartPosition = bookPositions[bookIndex+1].StartPosition ;
 
-                    CanonBookDef bookDefinition = booksInFile[bookIndex - startBookIndex];
+                    CanonBookDef bookDefinition = booksInFile[bookIndex];
                     for (int chapterIndex = 0; chapterIndex < bookDefinition.NumberOfChapters; chapterIndex++)
-                    {
-                        const int invalidChapterStartPosition = -1;
-                        ChapterPosition chapterPosition = new ChapterPosition(bookStartPosition, bookIndex, invalidChapterStartPosition, chapterIndex);
-                        long lastNonZeroStartPos = 0;
-                        long lastNonZeroLength = 0;
-                        int length = 0;
+					{
+						const int invalidChapterStartPosition = -1; // TODO: use Default property or int? or something instead
+						ChapterPosition chapterPosition = new ChapterPosition(bookStartPosition, bookIndex, invalidChapterStartPosition, chapterIndex);
+						long lastNonZeroStartPos = 0;
+						long lastNonZeroLength = 0;
+						int length = 0;
 
-                        for (int k = 0; k < canon.VersesInChapter[bookDefinition.VersesInChapterStartIndex + chapterIndex]; k++)
+                        for (int k = 0; k < Canon.VersesInChapter[bookDefinition.VersesInChapterStartIndex + chapterIndex]; k++)
                         {
                             int verseBookNumber = GetShortIntFromStream(fileStream, out var isEnd);
                             long verseStartPosition = GetInt48FromStream(fileStream, out isEnd);
@@ -78,25 +86,24 @@ namespace GUI.BibleReader
                 return chapters;
             }
         }
-        async Task<List<BookPosition>> LoadBookPositionsAsync(string bookPath, string fileName)
+
+        async Task<List<BookPosition>> LoadBookPositionsAsync(string filePath)
         {
-            string filePath = bookPath.Replace("/", "\\") + fileName + "." + ((char)IndexingBlockType.Book) + "zs";
             using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
             {
-                // read book position index
                 var bookPositions = new List<BookPosition>();
                 bool isEnd;
                 while (true)
                 {
-                    long start = this.GetintFromStream(fileStream, out isEnd);
+                    long start = GetIntFromStream(fileStream, out isEnd);
                     if (isEnd)
                         break;
 
-                    long length = this.GetintFromStream(fileStream, out isEnd);
+                    long length = GetIntFromStream(fileStream, out isEnd);
                     if (isEnd)
                         break;
 
-                    long unused = this.GetintFromStream(fileStream, out isEnd);
+                    long unused = GetIntFromStream(fileStream, out isEnd);
                     if (isEnd)
                         break;
 
@@ -104,21 +111,25 @@ namespace GUI.BibleReader
                 }
                 return bookPositions;
             }
-        }
+		}
 
-        void DumpPost(Stream stream)
+		string CreateVersificationFilePath(string bookPath, Testament testament, IndexingBlockType blockType)
+			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zv";
+
+		string CreateBzsFilePath(string bookPath, Testament testament, IndexingBlockType blockType)
+			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zs";
+
+		string CreateBzzFilePath(int absoluteChapterNumber, Testament testament, IndexingBlockType blockType)
+			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zz";
+
+		void DumpPost(Stream stream)
         {
             GetShortIntFromStream(stream, out bool isEnd);
             GetInt48FromStream(stream, out isEnd);
             GetShortIntFromStream(stream, out isEnd);
         }
 
-        private enum IndexingBlockType
-        {
-            Book = 'b',
-            Chapter = 'c'
-        }
-        long GetintFromStream(Stream fs, out bool isEnd)
+        long GetIntFromStream(Stream fs, out bool isEnd)
         {
             var buf = new byte[4];
             isEnd = fs.Read(buf, 0, 4) != 4;
@@ -153,115 +164,71 @@ namespace GUI.BibleReader
             return buf[1] * 0x100 + buf[0];
         }
 
-        public static async Task<byte[]> GetChapterBytes(int absoluteChapterNumber, string bookPath, List<ChapterPosition> chapterPositions, Canon canon)
+		public async Task<byte[]> GetChapterBytes(int absoluteChapterNumber, List<ChapterPosition> chapterPositions)
         {
-            //Debug.WriteLine("getChapterBytes start");
-            /*
-            int numberOfChapters = chapterPositions.Count;
-            if (numberOfChapters == 0)
-            {
-                return Encoding.UTF8.GetBytes("Does not exist");
-            }
-            if (chapterNumber >= numberOfChapters)
-            {
-                chapterNumber = numberOfChapters - 1;
-            }
+            ChapterPosition versesPositionsForChapter = chapterPositions[absoluteChapterNumber];
+            long blockStartPosition = versesPositionsForChapter.ChapterStartPosition;
+            long blockLength = versesPositionsForChapter.Length;
+			byte[] chapterBuffer = new byte[blockLength];
 
-            if (chapterNumber < 0)
-            {
-                chapterNumber = 0;
-            }*/
+			Testament testamentOfTheChapter = IsChapterInOldTestament(absoluteChapterNumber) ? Testament.Old : Testament.New;
+			string filePath = CreateBzzFilePath(absoluteChapterNumber, testamentOfTheChapter, IndexingBlockType.Book);
+			using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
+			{
+				// adjust the start postion of the stream to where this book begins.
+				// we must read the entire book up to the chapter we want even though we just want one chapter.
+				fileStream.Position = versesPositionsForChapter.BookStartPosition;
 
-            ChapterPosition versesForChapterPositions = chapterPositions[absoluteChapterNumber];
-            long bookStartPos = versesForChapterPositions.BookStartPosition;
-            long blockStartPos = versesForChapterPositions.ChapterStartPosition;
-            long blockLen = versesForChapterPositions.Length;
-            Stream fs;
-            var lastBookInOldTestament = canon.OldTestBooks[canon.OldTestBooks.Count() - 1];
-            //TODO: condition into IsChapterInOldTestament method
-            string fileName = (absoluteChapterNumber < (lastBookInOldTestament.VersesInChapterStartIndex + lastBookInOldTestament.NumberOfChapters)) ? "ot." : "nt.";
-            try
-            {
-                //Windows.Storage.ApplicationData appData = Windows.Storage.ApplicationData.Current;
-                //var folder = await appData.LocalFolder.GetFolderAsync(Serial.Path.Replace("/", "\\"));
-                string filenameComplete = bookPath + fileName + ((char)IndexingBlockType.Book) + "zz";
-                fs =
-                    await
-                    ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filenameComplete.Replace("/", "\\"));
-                //fs = await file.OpenStreamForReadAsync();
-            }
-            catch (Exception ee)
-            {
-                // does not exist
-                return Encoding.UTF8.GetBytes("File does not exist");
-            }
+				//zipStream = string.IsNullOrEmpty(this.Serial.CipherKey) ? new ZInputStream(fs) : new ZInputStream(new SapphireStream(fs, this.Serial.CipherKey));
+				using (ZlibStream zipStream = new ZlibStream(fileStream, CompressionMode.Decompress))
+				{
+					int totalBytesRead = 0;
+					int totalBytesCopied = 0;
+					int len = 0;
+					byte[] buffer = new byte[10000];
+					while (true)
+					{
+						len = zipStream.Read(buffer, 0, 10000);
+						if (len <= 0)
+						{
+							// we should never come to this point.  Just here as a safety procaution
+							break;
+						}
 
-            // adjust the start postion of the stream to where this book begins.
-            // we must read the entire book up to the chapter we want even though we just want one chapter.
-            fs.Position = bookStartPos;
-            //ZInputStream zipStream;
-            //zipStream = string.IsNullOrEmpty(this.Serial.CipherKey) ? new ZInputStream(fs) : new ZInputStream(new SapphireStream(fs, this.Serial.CipherKey));
-            ZlibStream zipStream;
-            zipStream = new ZlibStream(fs, Ionic.Zlib.CompressionMode.Decompress);
+						totalBytesRead += len;
+						if (totalBytesRead >= blockStartPosition)
+						{
+							// we are now inside of where the chapter we want is so we need to start saving it.
+							int startOffset = 0;
+							if (totalBytesCopied == 0)
+							{
+								// but our actual chapter might begin in the middle of the buffer.  Find the offset from the
+								// beginning of the buffer.
+								startOffset = len - (totalBytesRead - (int)blockStartPosition);
+							}
 
-            var chapterBuffer = new byte[blockLen];
-            int totalBytesRead = 0;
-            int totalBytesCopied = 0;
-            int len = 0;
-            try
-            {
-                var buffer = new byte[10000];
-                while (true)
-                {
-                    try
-                    {
-                        len = zipStream.Read(buffer, 0, 10000);
-                    }
-                    catch (Exception ee)
-                    {
-                        Debug.WriteLine("caught a unzip crash 4.2" + ee);
-                    }
+							for (int i = totalBytesCopied; i < blockLength && (i - totalBytesCopied) < (len - startOffset); i++)
+							{
+								chapterBuffer[i] = buffer[i - totalBytesCopied + startOffset];
+							}
 
-                    if (len <= 0)
-                    {
-                        // we should never come to this point.  Just here as a safety procaution
-                        break;
-                    }
-
-                    totalBytesRead += len;
-                    if (totalBytesRead >= blockStartPos)
-                    {
-                        // we are now inside of where the chapter we want is so we need to start saving it.
-                        int startOffset = 0;
-                        if (totalBytesCopied == 0)
-                        {
-                            // but our actual chapter might begin in the middle of the buffer.  Find the offset from the
-                            // beginning of the buffer.
-                            startOffset = len - (totalBytesRead - (int)blockStartPos);
-                        }
-                        
-                        for (int i = totalBytesCopied; i < blockLen && (i - totalBytesCopied) < (len - startOffset); i++)
-                        {
-                            chapterBuffer[i] = buffer[i - totalBytesCopied + startOffset];
-                        }
-
-                        totalBytesCopied += len - startOffset;
-                        if (totalBytesCopied >= blockLen)
-                        {
-                            // we are done. no more reason to read anymore of this book stream, just get out.
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ee)
-            {
-                Debug.WriteLine("BibleZtextReader.getChapterBytes crash; " + ee.Message);
-            }
-
-            fs.Dispose();
-            zipStream.Dispose();
+							totalBytesCopied += len - startOffset;
+							if (totalBytesCopied >= blockLength)
+							{
+								// we are done. no more reason to read anymore of this book stream, just get out.
+								break;
+							}
+						}
+					}
+				}
+			}
             return chapterBuffer;
-        }
-    }
+		}
+
+		bool IsChapterInOldTestament(int absoluteChapterNumber)
+		{
+			var lastBookInOldTestament = Canon.OldTestBooks.Last();
+			return absoluteChapterNumber < lastBookInOldTestament.NumberOfChapters + lastBookInOldTestament.VersesInChapterStartIndex;
+		}
+	}
 }

@@ -1,6 +1,5 @@
-﻿using Ionic.Zlib;
+﻿using Sword;
 using Sword.reader;
-using Sword.versification;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Windows.Storage;
 
 namespace GUI.BibleReader
 {
-    class BibleZTextReader
+	class BibleZTextReader
     {
         const string XmlPrefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<versee>";
         const string XmlPrefixIso = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<versee>";
@@ -49,18 +47,16 @@ namespace GUI.BibleReader
         };
 
         List<ChapterPosition> chapterPositions = new List<ChapterPosition>();
-        string iso2DigitLangCode;
-        Canon canon;
-        string bookPath;
+		BibleLoader bibleLoader;
+		string iso2DigitLangCode;
         string bookName;
 
-        public BibleZTextReader(List<ChapterPosition> chapterPositions, string iso2DigitLangCode, Canon canon, string bookPath, string bookName)
+        public BibleZTextReader(SwordBookMetaData swordBookMetaData, List<ChapterPosition> chapterPositions, string bookName)
         {
-            this.chapterPositions = chapterPositions;
-            this.iso2DigitLangCode = iso2DigitLangCode;
-            this.canon = canon;
-            this.bookPath = bookPath;//TODO: Get rid of this (into some loader)
-            this.bookName = bookName;
+			bibleLoader = new BibleLoader(swordBookMetaData);
+			this.chapterPositions = chapterPositions;
+            iso2DigitLangCode = (swordBookMetaData.GetCetProperty(ConfigEntryType.Lang) as Language).Code;
+            this.bookName = bookName; //TODO: Move this into some BookRenderer
         }
 
         public async Task<string> GetChapterHtml(
@@ -69,16 +65,16 @@ namespace GUI.BibleReader
             int chapterNumber,
             bool isNotesOnly,
             bool addStartFinishHtml)
-        {
-            if (this.chapterPositions.Count == 0)
+		{
+			if (this.chapterPositions.Count == 0)
             {
                 return string.Empty;//TODO: throw exception instead
             }
 
             Debug.WriteLine("GetChapterHtml start");
-            var book = canon.BookByShortName[bookShortName];
+            var book = bibleLoader.Canon.BookByShortName[bookShortName];
             var htmlChapter = new StringBuilder();
-            ChapterPosition versesForChapterPositions = chapterPositions[chapterNumber + book.VersesInChapterStartIndex];
+            ChapterPosition versesPositionsForChapter = chapterPositions[chapterNumber + book.VersesInChapterStartIndex];
             string chapterStartHtml = string.Empty;
             string chapterEndHtml = string.Empty;
             if (addStartFinishHtml)
@@ -107,19 +103,15 @@ namespace GUI.BibleReader
             // in some commentaries, the verses repeat. Stop these repeats from comming in!
             var verseRepeatCheck = new Dictionary<long, int>();
             bool isInPoetry = false;
-            byte[] chapterBuffer = await BibleLoader.GetChapterBytes(chapterNumber + book.VersesInChapterStartIndex, bookPath, chapterPositions, canon);
+            byte[] chapterBuffer = await bibleLoader.GetChapterBytes(chapterNumber + book.VersesInChapterStartIndex, chapterPositions);
 
-            // for debug
-            //string xxxxxx = Encoding.UTF8.GetString(chapterBuffer, 0, chapterBuffer.Length);
-            //Debug.WriteLine("RawChapter: " + xxxxxx);
-
-            for (int i = 0; i < versesForChapterPositions.Verses.Count; i++)
+            for (int i = 0; i < versesPositionsForChapter.Verses.Count; i++)
             {
-                VersePosition verse = versesForChapterPositions.Verses[i];
+                VersePosition verse = versesPositionsForChapter.Verses[i];
                 string htmlChapterText = startVerseMarking
                                          + (displaySettings.ShowBookName ? bookName + " " : string.Empty)
                                          + (displaySettings.ShowChapterNumber
-                                                ? ((versesForChapterPositions.ChapterNumber + 1) + ":")
+                                                ? ((versesPositionsForChapter.ChapterNumber + 1) + ":")
                                                 : string.Empty)
                                          + (displaySettings.ShowVerseNumber ? (i + 1).ToString() : string.Empty)
                                          + stopVerseMarking;
@@ -149,7 +141,7 @@ namespace GUI.BibleReader
                         verseTxt = texts[0];
                         isInPoetry = bool.Parse(texts[1]);
                         noteIdentifier = int.Parse(texts[2]);
-                        if (isInPoetry && (i == versesForChapterPositions.Verses.Count - 1))
+                        if (isInPoetry && (i == versesPositionsForChapter.Verses.Count - 1))
                         {
                             // we must end the indentations
                             verseTxt += "</blockquote>";

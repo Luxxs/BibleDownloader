@@ -175,20 +175,14 @@ namespace GUI
         async Task<string> ReadChapterAsync(string bibleCodeName, string bookShortName, int chapter)
         {
             var book = metadatas.Find(x => x.InternalName == bibleCodeName);
-            string bookPath = book.GetCetProperty(ConfigEntryType.ADataPath).ToString().Substring(2); // Remove "./" on the beginning
-            bool isIsoEncoding = !book.GetCetProperty(ConfigEntryType.Encoding).Equals("UTF-8");
             string modDrv = ((string)book.GetProperty(ConfigEntryType.ModDrv)).ToUpper();
             if (modDrv.Equals("ZTEXT"))
             {
-                //Initialize (get book,chapter,verse positions):
-                var language = book.GetCetProperty(ConfigEntryType.Lang);
-                string versification = book.GetCetProperty(ConfigEntryType.Versification) as string;
-                var canon = CanonManager.GetCanon(versification);
-                var bibleLoader = new BibleLoader();
-                var oldTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(bookPath, "ot", 0, canon.OldTestBooks.Count(), canon.OldTestBooks, canon);
-                var newTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(bookPath, "nt", canon.OldTestBooks.Count(), canon.OldTestBooks.Count() + canon.NewTestBooks.Count(), canon.NewTestBooks, canon);
+                var bibleLoader = new BibleLoader(book);
+                var oldTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(Testament.Old);
+                var newTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(Testament.New);
                 var chapterPositions = oldTestamentChapterPositions.Concat(newTestamentChapterPositions).ToList();
-                var bibleReader = new BibleZTextReader(chapterPositions, (language as Language).Code, canon, bookPath, book.Name);
+                var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
                 return await bibleReader.GetChapterHtml(new DisplaySettings(), bookShortName, chapter, false, true);
             }
             return "Unknown modDrv";

@@ -99,6 +99,8 @@
     <Compile Include="BibleReader\BibleZTextReader.cs" />
     <Compile Include="BibleReader\BookPosition.cs" />
     <Compile Include="BibleReader\ChapterPosition.cs" />
+    <Compile Include="BibleReader\IndexingBlockType.cs" />
+    <Compile Include="BibleReader\Testament.cs" />
     <Compile Include="BibleReader\VersePosition.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -136,6 +138,16 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.0.6</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sword\Sword.csproj">
+      <Project>{727f835f-97df-4963-83af-1afbe8362656}</Project>
+      <Name>Sword</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\zlib\zlib.csproj">
+      <Project>{6dc9a5b6-4d16-4c58-8ca8-6153e0a02530}</Project>
+      <Name>zlib</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
