@@ -59,7 +59,7 @@ namespace GUI.BibleReader
             this.bookName = bookName; //TODO: Move this into some BookRenderer
         }
 
-        public async Task<string> GetChapterHtml(
+        public async Task<string> GetChapterHtmlAsync(
             DisplaySettings displaySettings,
             string bookShortName,
             int chapterNumber,
@@ -103,7 +103,7 @@ namespace GUI.BibleReader
             // in some commentaries, the verses repeat. Stop these repeats from comming in!
             var verseRepeatCheck = new Dictionary<long, int>();
             bool isInPoetry = false;
-            byte[] chapterBuffer = await bibleLoader.GetChapterBytes(chapterNumber + book.VersesInChapterStartIndex, chapterPositions);
+            byte[] chapterBuffer = await bibleLoader.GetChapterBytesAsync(chapterNumber + book.VersesInChapterStartIndex, chapterPositions);
 
             for (int i = 0; i < versesPositionsForChapter.Verses.Count; i++)
             {

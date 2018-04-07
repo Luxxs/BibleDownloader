@@ -95,6 +95,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BibleReader\BibleDownloader.cs" />
     <Compile Include="BibleReader\BibleLoader.cs" />
     <Compile Include="BibleReader\BibleZTextReader.cs" />
     <Compile Include="BibleReader\BookPosition.cs" />

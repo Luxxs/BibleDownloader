@@ -165,7 +165,7 @@ namespace GUI.BibleReader
         }
 
 
-		public async Task<byte[]> GetChapterBytes(int absoluteChapterNumber, List<ChapterPosition> chapterPositions)
+		public async Task<byte[]> GetChapterBytesAsync(int absoluteChapterNumber, List<ChapterPosition> chapterPositions)
         {
             ChapterPosition versesPositionsForChapter = chapterPositions[absoluteChapterNumber];
             long blockStartPosition = versesPositionsForChapter.ChapterStartPosition;
