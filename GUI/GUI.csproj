@@ -95,6 +95,17 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BibleParser\BibleParser.cs" />
+    <Compile Include="BibleParser\Chapter.cs" />
+    <Compile Include="BibleParser\Element.cs" />
+    <Compile Include="BibleParser\Highlight.cs" />
+    <Compile Include="BibleParser\IElementWithContent.cs" />
+    <Compile Include="BibleParser\Note.cs" />
+    <Compile Include="BibleParser\Paragraph.cs" />
+    <Compile Include="BibleParser\Text.cs" />
+    <Compile Include="BibleParser\Title.cs" />
+    <Compile Include="BibleParser\Verse.cs" />
+    <Compile Include="BibleParser\VerseElement.cs" />
     <Compile Include="BibleReader\BibleDownloader.cs" />
     <Compile Include="BibleReader\BibleLoader.cs" />
     <Compile Include="BibleReader\BibleZTextReader.cs" />
@@ -113,6 +124,9 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="BibleParser\Osis\osisCore.2.1.1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="GUI_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using GUI.BibleReader;
+﻿using GUI.BibleParser;
+using GUI.BibleReader;
 using Sword;
 using Sword.reader;
 using System.Collections.Generic;
@@ -31,21 +32,31 @@ namespace GUI
 			{
 				await bibleDownloader.DownloadBookAsync(bible);
 			}
-            string chapter = await ReadChapterAsync(bible.InternalName, "Matt", 0);
+
+			string modDrv = ((string)bible.GetProperty(ConfigEntryType.ModDrv)).ToUpper();
+			if (modDrv.Equals("ZTEXT"))
+			{
+				var bibleLoader = new BibleLoader(bible);
+				var chapterPositions = await bibleLoader.LoadVersePositionsAsync();
+				string chapterHtml = await GetChapterHtmlAsync(bible, chapterPositions, "Matt", 0);
+				Chapter chapter = await GetChapterAsync(bibleLoader, bible, chapterPositions, "Matt", 0);
+			}
         }
 
-        async Task<string> ReadChapterAsync(string bibleCodeName, string bookShortName, int chapter)
-        {
-            var book = metadatas.Find(x => x.InternalName == bibleCodeName);
-            string modDrv = ((string)book.GetProperty(ConfigEntryType.ModDrv)).ToUpper();
-            if (modDrv.Equals("ZTEXT"))
-            {
-                var bibleLoader = new BibleLoader(book);
-				var chapterPositions = await bibleLoader.LoadVersePositionsAsync();
-				var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
-                return await bibleReader.GetChapterHtmlAsync(new DisplaySettings(), bookShortName, chapter, false, true);
-            }
-            return "Unknown modDrv";
-        }
+        async Task<string> GetChapterHtmlAsync(SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
+		{
+			var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
+			var displaySettings = new DisplaySettings
+			{
+				ShowNotePositions = true
+			};
+			return await bibleReader.GetChapterHtmlAsync(displaySettings, bookShortName, chapter, false, true);
+		}
+
+		async Task<Chapter> GetChapterAsync(BibleLoader bibleLoader, SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
+		{
+			var bibleParser = new BibleParser.BibleParser(bibleLoader, chapterPositions);
+			return await bibleParser.GetChapterAsync(bookShortName, chapter);
+		}
     }
 }
