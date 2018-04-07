@@ -2,7 +2,6 @@
 using Sword;
 using Sword.reader;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,9 +26,12 @@ namespace GUI
         {
 			var bibleDownloader = new BibleDownloader();
 			metadatas = await bibleDownloader.DownloadBookMetadatasAsync();
-            var bibleKralicka = metadatas.Find(x => x.InternalName == "czebkr");
-            await bibleDownloader.DownloadBookAsync(bibleKralicka);
-            string genesis1 = await ReadChapterAsync(bibleKralicka.InternalName, "Matt", 0);
+            var bible = metadatas.Find(x => x.InternalName == "czecsp");
+			if(!new BibleLoader(bible).IsBibleSaved())
+			{
+				await bibleDownloader.DownloadBookAsync(bible);
+			}
+            string chapter = await ReadChapterAsync(bible.InternalName, "Matt", 0);
         }
 
         async Task<string> ReadChapterAsync(string bibleCodeName, string bookShortName, int chapter)
@@ -39,10 +41,8 @@ namespace GUI
             if (modDrv.Equals("ZTEXT"))
             {
                 var bibleLoader = new BibleLoader(book);
-                var oldTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(Testament.Old);
-                var newTestamentChapterPositions = await bibleLoader.LoadVersePositionsAsync(Testament.New);
-                var chapterPositions = oldTestamentChapterPositions.Concat(newTestamentChapterPositions).ToList();
-                var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
+				var chapterPositions = await bibleLoader.LoadVersePositionsAsync();
+				var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
                 return await bibleReader.GetChapterHtmlAsync(new DisplaySettings(), bookShortName, chapter, false, true);
             }
             return "Unknown modDrv";

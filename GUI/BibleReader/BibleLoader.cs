@@ -13,6 +13,7 @@ namespace GUI.BibleReader
 	{
 		public Canon Canon { get; }
 		readonly string bookPath;
+		const IndexingBlockType blockType = IndexingBlockType.Book;
 
 		public BibleLoader(SwordBookMetaData swordBookMetadata)
 		{
@@ -21,15 +22,36 @@ namespace GUI.BibleReader
 			Canon = CanonManager.GetCanon(versification);
 		}
 
+		public bool IsBibleSaved()
+		{
+			var fileChecks = new List<bool>
+			{
+				new FileInfo(CreateVersificationFilePath(Testament.Old)).Exists,
+				new FileInfo(CreateBzsFilePath(Testament.Old)).Exists,
+				new FileInfo(CreateBzzFilePath(Testament.Old)).Exists,
+				new FileInfo(CreateVersificationFilePath(Testament.New)).Exists,
+				new FileInfo(CreateBzsFilePath(Testament.New)).Exists,
+				new FileInfo(CreateBzzFilePath(Testament.New)).Exists,
+			};
+			return fileChecks.All(x => x == true);
+		}
+
+		public async Task<List<ChapterPosition>> LoadVersePositionsAsync()
+		{
+			var oldTestamentChapterPositions = await LoadVersePositionsAsync(Testament.Old);
+			var newTestamentChapterPositions = await LoadVersePositionsAsync(Testament.New);
+			return oldTestamentChapterPositions.Concat(newTestamentChapterPositions).ToList();
+		}
+
 		// Load book positions from versification file
-		public async Task<List<ChapterPosition>> LoadVersePositionsAsync(Testament testament)
+		async Task<List<ChapterPosition>> LoadVersePositionsAsync(Testament testament)
         {
-			string bzsFilePath = CreateBzsFilePath(bookPath, testament, IndexingBlockType.Book);
+			string bzsFilePath = CreateBzsFilePath(testament);
 			List<BookPosition> bookPositions = await LoadBookPositionsAsync(bzsFilePath);
 
 			CanonBookDef[] booksInFile = testament == Testament.Old ? Canon.OldTestBooks : Canon.NewTestBooks;
 
-			string filePath = CreateVersificationFilePath(bookPath, testament, IndexingBlockType.Book);
+			string filePath = CreateVersificationFilePath(testament);
 			using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
             {
                 for (int i = 0; i < 4; i++)
@@ -113,13 +135,13 @@ namespace GUI.BibleReader
             }
 		}
 
-		string CreateVersificationFilePath(string bookPath, Testament testament, IndexingBlockType blockType)
+		string CreateVersificationFilePath(Testament testament)
 			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zv";
 
-		string CreateBzsFilePath(string bookPath, Testament testament, IndexingBlockType blockType)
+		string CreateBzsFilePath(Testament testament)
 			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zs";
 
-		string CreateBzzFilePath(int absoluteChapterNumber, Testament testament, IndexingBlockType blockType)
+		string CreateBzzFilePath(Testament testament)
 			=> bookPath + (testament == Testament.Old ? "ot" : "nt") + "." + (char)blockType + "zz";
 
 		void DumpPost(Stream stream)
@@ -173,7 +195,7 @@ namespace GUI.BibleReader
 			byte[] chapterBuffer = new byte[blockLength];
 
 			Testament testamentOfTheChapter = IsChapterInOldTestament(absoluteChapterNumber) ? Testament.Old : Testament.New;
-			string filePath = CreateBzzFilePath(absoluteChapterNumber, testamentOfTheChapter, IndexingBlockType.Book);
+			string filePath = CreateBzzFilePath(testamentOfTheChapter);
 			using (Stream fileStream = await ApplicationData.Current.LocalFolder.OpenStreamForReadAsync(filePath))
 			{
 				// adjust the start postion of the stream to where this book begins.
