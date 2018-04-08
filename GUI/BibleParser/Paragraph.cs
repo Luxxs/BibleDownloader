@@ -1,7 +1,9 @@
-﻿namespace GUI.BibleParser
+﻿using System.Collections.Generic;
+
+namespace GUI.BibleParser
 {
-	class ParagraphSeparator : VerseElement
+	class ParagraphSeparator : VerseElement, IElementWithContent
 	{
-		
+		public List<VerseElement> Content { get; set; }
 	}
 }

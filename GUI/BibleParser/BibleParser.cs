@@ -13,9 +13,9 @@ namespace GUI.BibleParser
 {
 	class BibleParser
 	{
-		const string XmlPrefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<versee>";
-		const string XmlPrefixIso = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<versee>";
-		const string XmlSuffix = "\n</versee>";
+		const string XmlPrefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><versee>";
+		const string XmlPrefixIso = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><versee>";
+		const string XmlSuffix = "</versee>";
 
 		BibleLoader bibleLoader;
 		List<ChapterPosition> chapterPositions;
@@ -115,12 +115,14 @@ namespace GUI.BibleParser
 							{
 								case XmlNodeType.SignificantWhitespace:
 									if (elements.Any())
-										elements.Peek().Text += reader.Value;
+										verse.Content.Add(elements.Pop());
+									elements.Push(new TextElement { Text = reader.Value });
 									break;
 
 								case XmlNodeType.Whitespace:
 									if (elements.Any())
-										elements.Peek().Text += reader.Value;
+										verse.Content.Add(elements.Pop());
+									elements.Push(new TextElement { Text = reader.Value });
 									break;
 
 								case XmlNodeType.Element:
@@ -132,10 +134,8 @@ namespace GUI.BibleParser
 											break;
 
 										case "title":
-											elements.Push(new Title
-											{
-												Text = reader.Value
-											});
+											//Should be always in the beginning of a verse
+											elements.Push(new Title());
 											break;
 
 										case "rf":
@@ -143,8 +143,7 @@ namespace GUI.BibleParser
 											verse.Content.Add(elements.Pop());
 											elements.Push(new Note
 											{
-												Identifier = reader.GetAttribute("n"),
-												Text = reader.Value
+												Identifier = reader.GetAttribute("n")
 											});
 											break;
 
@@ -154,13 +153,29 @@ namespace GUI.BibleParser
 												Type = reader.GetAttribute("type")
 											});
 											break;
+
 										case "br":
 											if (elements.Any())
-												elements.Peek().Text += "\n";
+												verse.Content.Add(elements.Pop());
+											verse.Content.Add(new LineBreak());
 											break;
+
 										case "p":
-											// TODO: Don't insert text into this element
-											elements.Push(new ParagraphSeparator());
+											if (elements.Any())
+												verse.Content.Add(elements.Pop());
+											var paragraphSeparator = new ParagraphSeparator();
+											if (reader.IsEmptyElement)
+												verse.Content.Add(paragraphSeparator);
+											else
+												elements.Push(paragraphSeparator);
+											break;
+
+										case "transchange":
+											if (elements.Any())
+												verse.Content.Add(elements.Pop());
+											elements.Push(new ChangeInTranslation {
+												Type = reader.GetAttribute("type")
+											});
 											break;
 
 										case "cm":
@@ -172,7 +187,7 @@ namespace GUI.BibleParser
 										case "fi":
 										case "q":
 										case "w":// <w lemma="strong:G1078" morph="robinson:N-GSF">γενεσεως</w>
-												 // Don't know what is this for
+											// Don't know what is this for
 											break;
 									}
 									break;
@@ -184,7 +199,7 @@ namespace GUI.BibleParser
 										if (elements.Peek() is IElementWithContent)
 											(elements.Peek() as IElementWithContent).Content.Add(textElement);
 										else
-											elements.Peek().Text = reader.Value;
+											elements.Peek().Text += reader.Value;
 									}
 									else
 										elements.Push(textElement);
@@ -193,6 +208,7 @@ namespace GUI.BibleParser
 								case XmlNodeType.EndElement:
 									switch (reader.Name.ToLower())
 									{
+										case "transchange":
 										case "title":
 										case "note":
 										case "hi":
@@ -203,6 +219,7 @@ namespace GUI.BibleParser
 											else
 												verse.Content.Add(endingElement);
 											break;
+
 										case "reference":
 										case "q":
 										case "w": // <w lemma="strong:G1078" morph="robinson:N-GSF">γενεσεως</w>
@@ -211,6 +228,7 @@ namespace GUI.BibleParser
 										case "scripref":
 											// Don't know what is this for
 											break;
+
 										case "img":
 										case "figure":
 											// nothing needed. Already handled

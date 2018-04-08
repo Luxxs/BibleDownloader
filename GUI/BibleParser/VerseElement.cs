@@ -1,6 +1,6 @@
 ﻿namespace GUI.BibleParser
 {
-	class VerseElement : Element
+	class VerseElement
 	{
 		public string Text { get; set; }
 
