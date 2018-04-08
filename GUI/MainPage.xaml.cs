@@ -39,7 +39,7 @@ namespace GUI
 				var bibleLoader = new BibleLoader(bible);
 				var chapterPositions = await bibleLoader.LoadVersePositionsAsync();
 				string chapterHtml = await GetChapterHtmlAsync(bible, chapterPositions, "Matt", 0);
-				Chapter chapter = await GetChapterAsync(bibleLoader, bible, chapterPositions, "Matt", 0);
+				Chapter chapter = await GetChapterAsync(bibleLoader, bible, chapterPositions, "Matt", 1);
 			}
         }
 
@@ -55,7 +55,7 @@ namespace GUI
 
 		async Task<Chapter> GetChapterAsync(BibleLoader bibleLoader, SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
 		{
-			var bibleParser = new BibleParser.BibleParser(bibleLoader, chapterPositions);
+			var bibleParser = new ChapterZTextParser(bibleLoader, chapterPositions);
 			return await bibleParser.GetChapterAsync(bookShortName, chapter);
 		}
     }

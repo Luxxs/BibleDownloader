@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace GUI.BibleParser
 {
-	class BibleParser
+	class ChapterZTextParser
 	{
 		const string XmlPrefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><versee>";
 		const string XmlPrefixIso = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><versee>";
@@ -22,7 +22,7 @@ namespace GUI.BibleParser
 		BibleLoader bibleLoader;
 		List<ChapterPosition> chapterPositions;
 
-		public BibleParser(BibleLoader bibleLoader, List<ChapterPosition> chapterPositions)
+		public ChapterZTextParser(BibleLoader bibleLoader, List<ChapterPosition> chapterPositions)
 		{
 			this.bibleLoader = bibleLoader;
 			this.chapterPositions = chapterPositions;
@@ -36,6 +36,7 @@ namespace GUI.BibleParser
 				Verses = new List<Verse>()
 			};
 
+			chapterNumber--; // switch to indexing from 0
 			CanonBookDef book = bibleLoader.Canon.BookByShortName[bookShortName];
 			ChapterPosition versesPositionsForChapter = chapterPositions[book.VersesInChapterStartIndex + chapterNumber];
 
