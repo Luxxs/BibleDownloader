@@ -1,14 +1,13 @@
 ﻿using GUI.BibleParser.DataObjects.Interfaces;
 using System.Collections.Generic;
 
-namespace GUI.BibleParser
+namespace GUI.BibleParser.DataObjects
 {
-	class Verse
+	class ParagraphSeparator : IElementWithContent
 	{
-		public int Number { get; set; }
 		public List<IVerseElement> Content { get; set; }
-
+		
 		public override string ToString()
-			=> $"{Number}:{{{string.Join("}{", Content)}}}";
+			=> $"p({Content?.Count})";
 	}
 }

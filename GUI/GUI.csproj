@@ -96,18 +96,18 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="BibleParser\BibleParser.cs" />
-    <Compile Include="BibleParser\ChangeInTranslation.cs" />
+    <Compile Include="BibleParser\DataObjects\ChangeInTranslation.cs" />
     <Compile Include="BibleParser\Chapter.cs" />
-    <Compile Include="BibleParser\Element.cs" />
-    <Compile Include="BibleParser\Highlight.cs" />
-    <Compile Include="BibleParser\IElementWithContent.cs" />
-    <Compile Include="BibleParser\LineBreak.cs" />
-    <Compile Include="BibleParser\Note.cs" />
-    <Compile Include="BibleParser\Paragraph.cs" />
-    <Compile Include="BibleParser\Text.cs" />
-    <Compile Include="BibleParser\Title.cs" />
+    <Compile Include="BibleParser\DataObjects\Highlight.cs" />
+    <Compile Include="BibleParser\DataObjects\Interfaces\IElementWithContent.cs" />
+    <Compile Include="BibleParser\DataObjects\Interfaces\IElementWithText.cs" />
+    <Compile Include="BibleParser\DataObjects\Interfaces\IVerseElement.cs" />
+    <Compile Include="BibleParser\DataObjects\LineBreak.cs" />
+    <Compile Include="BibleParser\DataObjects\Note.cs" />
+    <Compile Include="BibleParser\DataObjects\Paragraph.cs" />
+    <Compile Include="BibleParser\DataObjects\Text.cs" />
+    <Compile Include="BibleParser\DataObjects\Title.cs" />
     <Compile Include="BibleParser\Verse.cs" />
-    <Compile Include="BibleParser\VerseElement.cs" />
     <Compile Include="BibleReader\BibleDownloader.cs" />
     <Compile Include="BibleReader\BibleLoader.cs" />
     <Compile Include="BibleReader\BibleZTextReader.cs" />

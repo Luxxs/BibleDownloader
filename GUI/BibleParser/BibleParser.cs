@@ -1,4 +1,6 @@
-﻿using GUI.BibleReader;
+﻿using GUI.BibleParser.DataObjects;
+using GUI.BibleParser.DataObjects.Interfaces;
+using GUI.BibleReader;
 using Sword.versification;
 using System;
 using System.Collections.Generic;
@@ -39,6 +41,7 @@ namespace GUI.BibleParser
 
 			byte[] chapterBytes = await bibleLoader.GetChapterBytesAsync(book.VersesInChapterStartIndex + chapterNumber, chapterPositions);
 			var usedVersePositions = new List<long>();
+			int verseNumber = 1;
 			foreach (VersePosition versePosition in versesPositionsForChapter.Verses)
 			{
 				// in some commentaries, the verses repeat. Stop these repeats from comming in!
@@ -46,6 +49,7 @@ namespace GUI.BibleParser
 				{
 					usedVersePositions.Add(versePosition.StartPosition);
 					var verse = ParseOsisVerseSimplified(chapterBytes, (int)versePosition.StartPosition, versePosition.Length, false);
+					verse.Number = verseNumber++;
 					chapter.Verses.Add(verse);
 				}
 			}
@@ -101,10 +105,10 @@ namespace GUI.BibleParser
 				{
 					var verse = new Verse
 					{
-						Content = new List<VerseElement>()
+						Content = new List<IVerseElement>()
 					};
 
-					Stack<VerseElement> elements = new Stack<VerseElement>();
+					Stack<IVerseElement> elements = new Stack<IVerseElement>();
 
 					try
 					{
@@ -188,6 +192,7 @@ namespace GUI.BibleParser
 										case "q":
 										case "w":// <w lemma="strong:G1078" morph="robinson:N-GSF">γενεσεως</w>
 											// Don't know what is this for
+											// TODO: Deal with this, since it is causing multiple TextElements being inserted in a row
 											break;
 									}
 									break;
@@ -199,7 +204,7 @@ namespace GUI.BibleParser
 										if (elements.Peek() is IElementWithContent)
 											(elements.Peek() as IElementWithContent).Content.Add(textElement);
 										else
-											elements.Peek().Text += reader.Value;
+											(elements.Peek() as IElementWithText).Text += reader.Value;
 									}
 									else
 										elements.Push(textElement);
@@ -231,7 +236,7 @@ namespace GUI.BibleParser
 
 										case "img":
 										case "figure":
-											// nothing needed. Already handled
+											// nothing needed; already "handled"
 											break;
 									}
 									break;
