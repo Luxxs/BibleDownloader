@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Iconic.Zlib.Netstandard" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sword\Sword.csproj" />
+    <ProjectReference Include="..\zlib\zlib.csproj" />
+  </ItemGroup>
+
+</Project>

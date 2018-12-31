@@ -57,9 +57,6 @@ namespace ICSharpCode.SharpZipLib.Tar
 {
     using System;
     using System.IO;
-    using System.Text;
-
-    using Windows.Storage;
 
     #region Delegates
 

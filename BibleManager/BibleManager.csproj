@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BibleLoader\BibleLoader.csproj" />
+    <ProjectReference Include="..\BibleParser\BibleParser.csproj" />
+    <ProjectReference Include="..\Sword\Sword.csproj" />
+    <ProjectReference Include="..\zlib\zlib.csproj" />
+  </ItemGroup>
+
+</Project>
