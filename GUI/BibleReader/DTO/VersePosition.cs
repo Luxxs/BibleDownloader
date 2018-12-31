@@ -1,4 +1,4 @@
-﻿namespace GUI.BibleReader
+﻿namespace GUI.BibleReader.DTO
 {
     struct VersePosition
     {

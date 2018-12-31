@@ -1,11 +1,9 @@
-﻿using GUI.BibleParser;
-using GUI.BibleReader;
+﻿using Newtonsoft.Json;
 using Sword;
-using Sword.reader;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using GUI.BibleParser;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -17,46 +15,50 @@ namespace GUI
     public sealed partial class MainPage : Page
     {
         List<SwordBookMetaData> metadatas;
+        readonly IBibleManager bibleManager;
 
         public MainPage()
         {
             this.InitializeComponent();
+            bibleManager = new BibleManager();
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-			var bibleDownloader = new BibleDownloader();
-			metadatas = await bibleDownloader.DownloadBookMetadatasAsync();
-            var bible = metadatas.Find(x => x.InternalName == "czecsp");
-			if(!new BibleLoader(bible).IsBibleSaved())
-			{
-				await bibleDownloader.DownloadBookAsync(bible);
-			}
+            metadatas = await bibleManager.DownloadBibleMetaDatas();
+            var bibleMetadata = metadatas.Find(x => x.InternalName == "czecsp");
+            //Windows.Storage.ApplicationData.Current.LocalSettings.Values["SavedBookMetadatas"] = JsonConvert.SerializeObject(bibleMetadata);
+            //var loadedMetadata = JsonConvert.DeserializeObject<SwordBookMetaData>((string)Windows.Storage.ApplicationData.Current.LocalSettings.Values["SavedBookMetadatas"]);
+            if (!await bibleManager.IsBibleSaved(bibleMetadata))
+            {
+                await bibleManager.DownloadBibleAsync(bibleMetadata);
+            }
+            Chapter chapter = await bibleManager.GetChapterAsync(bibleMetadata, "Prov", 5);
 
-			string modDrv = ((string)bible.GetProperty(ConfigEntryType.ModDrv)).ToUpper();
-			if (modDrv.Equals("ZTEXT"))
-			{
-				var bibleLoader = new BibleLoader(bible);
-				var chapterPositions = await bibleLoader.LoadVersePositionsAsync();
-				string chapterHtml = await GetChapterHtmlAsync(bible, chapterPositions, "Matt", 0);
-				Chapter chapter = await GetChapterAsync(bibleLoader, bible, chapterPositions, "Matt", 1);
-			}
+            //string modDrv = ((string)loadedMetadata.GetProperty(ConfigEntryType.ModDrv)).ToUpper();
+            //if (modDrv.Equals("ZTEXT"))
+            //{
+            //    var bibleLoader = new BibleLoader(loadedMetadata);
+            //    var chapterPositions = await bibleLoader.LoadChapterPositionsAsync();
+            //    string chapterHtml = await GetChapterHtmlAsync(loadedMetadata, chapterPositions, "Prov", 4);
+            //    Chapter chapter = await GetChapterAsync(bibleLoader, loadedMetadata, chapterPositions, "Prov", 5);
+            //}
         }
 
-        async Task<string> GetChapterHtmlAsync(SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
-		{
-			var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
-			var displaySettings = new DisplaySettings
-			{
-				ShowNotePositions = true
-			};
-			return await bibleReader.GetChapterHtmlAsync(displaySettings, bookShortName, chapter, false, true);
-		}
+        //async Task<string> GetChapterHtmlAsync(SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
+        //{
+        //    var bibleReader = new BibleZTextReader(book, chapterPositions, book.Name);
+        //    var displaySettings = new DisplaySettings
+        //    {
+        //        ShowNotePositions = true
+        //    };
+        //    return await bibleReader.GetChapterHtmlAsync(displaySettings, bookShortName, chapter, false, true);
+        //}
 
-		async Task<Chapter> GetChapterAsync(BibleLoader bibleLoader, SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
-		{
-			var bibleParser = new ChapterZTextParser(bibleLoader, chapterPositions);
-			return await bibleParser.GetChapterAsync(bookShortName, chapter);
-		}
+        //async Task<Chapter> GetChapterAsync(BibleLoader bibleLoader, SwordBookMetaData book, List<ChapterPosition> chapterPositions, string bookShortName, int chapter)
+        //{
+        //    var bibleParser = new ChapterZTextParser(bibleLoader, chapterPositions);
+        //    return await bibleParser.GetChapterAsync(bookShortName, chapter);
+        //}
     }
 }

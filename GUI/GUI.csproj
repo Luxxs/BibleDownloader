@@ -95,27 +95,36 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BibleParser\BibleParserFactory.cs" />
     <Compile Include="BibleParser\ChapterZTextParser.cs" />
-    <Compile Include="BibleParser\DataObjects\ChangeInTranslation.cs" />
+    <Compile Include="BibleParser\IBibleParserFactory.cs" />
+    <Compile Include="BibleParser\IChapterParser.cs" />
+    <Compile Include="BibleParser\VerseElements\ChangeInTranslation.cs" />
     <Compile Include="BibleParser\Chapter.cs" />
-    <Compile Include="BibleParser\DataObjects\Highlight.cs" />
-    <Compile Include="BibleParser\DataObjects\Interfaces\IElementWithContent.cs" />
-    <Compile Include="BibleParser\DataObjects\Interfaces\IElementWithText.cs" />
-    <Compile Include="BibleParser\DataObjects\Interfaces\IVerseElement.cs" />
-    <Compile Include="BibleParser\DataObjects\LineBreak.cs" />
-    <Compile Include="BibleParser\DataObjects\Note.cs" />
-    <Compile Include="BibleParser\DataObjects\Paragraph.cs" />
-    <Compile Include="BibleParser\DataObjects\Text.cs" />
-    <Compile Include="BibleParser\DataObjects\Title.cs" />
+    <Compile Include="BibleParser\VerseElements\Highlight.cs" />
+    <Compile Include="BibleParser\VerseElements\Interfaces\IContentVerseElement.cs" />
+    <Compile Include="BibleParser\VerseElements\Interfaces\ITextVerseElement.cs" />
+    <Compile Include="BibleParser\VerseElements\Interfaces\IVerseElement.cs" />
+    <Compile Include="BibleParser\VerseElements\LineBreak.cs" />
+    <Compile Include="BibleParser\VerseElements\Note.cs" />
+    <Compile Include="BibleParser\VerseElements\Paragraph.cs" />
+    <Compile Include="BibleParser\VerseElements\Text.cs" />
+    <Compile Include="BibleParser\VerseElements\Title.cs" />
     <Compile Include="BibleParser\Verse.cs" />
     <Compile Include="BibleReader\BibleDownloader.cs" />
+    <Compile Include="BibleReader\BibleFileManager.cs" />
     <Compile Include="BibleReader\BibleLoader.cs" />
-    <Compile Include="BibleReader\BibleZTextReader.cs" />
-    <Compile Include="BibleReader\BookPosition.cs" />
-    <Compile Include="BibleReader\ChapterPosition.cs" />
-    <Compile Include="BibleReader\IndexingBlockType.cs" />
-    <Compile Include="BibleReader\Testament.cs" />
-    <Compile Include="BibleReader\VersePosition.cs" />
+    <Compile Include="BibleManager.cs" />
+    <Compile Include="BibleReader\DTO\BookPosition.cs" />
+    <Compile Include="BibleReader\DTO\ChapterPosition.cs" />
+    <Compile Include="BibleReader\Enums\IndexingBlockType.cs" />
+    <Compile Include="BibleReader\Enums\Testament.cs" />
+    <Compile Include="BibleReader\DTO\VersePosition.cs" />
+    <Compile Include="BibleReader\Interfaces\IBibleLoader.cs" />
+    <Compile Include="BibleReader\Interfaces\IBibleFileManager.cs" />
+    <Compile Include="BibleReader\Interfaces\IBibleDownloader.cs" />
+    <Compile Include="BibleReader\SwordBookMetaDataExtensions.cs" />
+    <Compile Include="IBibleManager.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -150,7 +159,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.6</Version>
+      <Version>6.0.8</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>11.0.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +175,7 @@
       <Name>zlib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

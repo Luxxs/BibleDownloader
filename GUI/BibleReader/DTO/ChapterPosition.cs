@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GUI.BibleReader
+namespace GUI.BibleReader.DTO
 {
     class ChapterPosition
     {

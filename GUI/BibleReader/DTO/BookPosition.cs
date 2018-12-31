@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GUI.BibleReader
+namespace GUI.BibleReader.DTO
 {
     class BookPosition
     {
@@ -8,6 +8,7 @@ namespace GUI.BibleReader
         public long StartPosition;
         public long Unused;
         public List<ChapterPosition> ChapterPositions = new List<ChapterPosition>();
+
         public BookPosition(long startPosition, long length, long unused)
         {
             this.StartPosition = startPosition;
