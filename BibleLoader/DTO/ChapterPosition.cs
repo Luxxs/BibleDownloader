@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BibleLoader.DTO
+namespace BibleLoader.Dto
 {
     public class ChapterPosition
     {

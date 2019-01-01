@@ -1,6 +1,6 @@
-﻿using BibleParser.VerseElements.Interfaces;
+﻿using BibleParser.Dto.VerseElements.Interfaces;
 
-namespace BibleParser.VerseElements
+namespace BibleParser.Dto.VerseElements
 {
     class TextElement : ITextVerseElement
     {

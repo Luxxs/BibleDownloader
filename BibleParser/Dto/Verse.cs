@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using BibleParser.VerseElements.Interfaces;
+using BibleParser.Dto.VerseElements.Interfaces;
 
-namespace BibleParser
+namespace BibleParser.Dto
 {
     public class Verse
     {

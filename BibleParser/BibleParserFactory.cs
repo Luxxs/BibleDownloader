@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BibleParser.Interfaces;
 using Sword;
 
 namespace BibleParser
@@ -15,7 +16,7 @@ namespace BibleParser
         {
             string bibleFormat = swordBookMetaData.GetModDrv();
             if (!chapterParsers.ContainsKey(bibleFormat))
-                throw new ArgumentException($"There is no parser for such format ('{bibleFormat}').");
+                throw new ArgumentException($"There is no parser for '{bibleFormat}' format.");
 
             return chapterParsers[bibleFormat];
         }

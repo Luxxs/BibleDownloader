@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BibleLoader.DTO;
+using BibleLoader.Dto;
 using BibleLoader.Enums;
 using BibleLoader.Interfaces;
 using Ionic.Zlib;

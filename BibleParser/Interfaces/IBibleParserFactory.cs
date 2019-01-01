@@ -1,6 +1,6 @@
 ﻿using Sword;
 
-namespace BibleParser
+namespace BibleParser.Interfaces
 {
     public interface IBibleParserFactory
     {

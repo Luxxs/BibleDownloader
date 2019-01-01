@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using BibleLoader.DTO;
+using BibleLoader.Dto;
 using Sword;
 
 namespace BibleLoader.Interfaces

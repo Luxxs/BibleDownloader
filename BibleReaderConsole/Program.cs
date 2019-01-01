@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BibleLoader;
 using BibleManager;
 using BibleParser;
+using BibleParser.Dto;
 using Sword;
 
 namespace BibleReaderConsole

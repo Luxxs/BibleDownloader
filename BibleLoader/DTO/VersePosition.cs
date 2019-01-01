@@ -1,4 +1,4 @@
-﻿namespace BibleLoader.DTO
+﻿namespace BibleLoader.Dto
 {
     public struct VersePosition
     {

@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using BibleLoader.DTO;
-using BibleParser.VerseElements;
-using BibleParser.VerseElements.Interfaces;
+using BibleLoader.Dto;
+using BibleParser.Dto;
+using BibleParser.Dto.VerseElements;
+using BibleParser.Dto.VerseElements.Interfaces;
+using BibleParser.Interfaces;
 
 namespace BibleParser
 {

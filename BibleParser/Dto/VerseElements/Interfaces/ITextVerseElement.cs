@@ -1,4 +1,4 @@
-﻿namespace BibleParser.VerseElements.Interfaces
+﻿namespace BibleParser.Dto.VerseElements.Interfaces
 {
     interface ITextVerseElement : IVerseElement
     {

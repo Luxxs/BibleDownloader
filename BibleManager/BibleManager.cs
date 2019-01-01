@@ -2,9 +2,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using BibleLoader;
-using BibleLoader.DTO;
+using BibleLoader.Dto;
 using BibleLoader.Interfaces;
-using BibleParser;
+using BibleParser.Dto;
+using BibleParser.Interfaces;
 using Sword;
 
 namespace BibleManager

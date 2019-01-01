@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BibleParser.VerseElements.Interfaces
+namespace BibleParser.Dto.VerseElements.Interfaces
 {
     interface IContentVerseElement : IVerseElement
     {

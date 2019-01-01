@@ -1,6 +1,7 @@
-﻿using BibleLoader.DTO;
+﻿using BibleLoader.Dto;
+using BibleParser.Dto;
 
-namespace BibleParser
+namespace BibleParser.Interfaces
 {
     public interface IChapterParser
     {

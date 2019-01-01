@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using BibleParser;
+using BibleParser.Dto;
 using Sword;
 
 namespace BibleManager

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BibleParser
+namespace BibleParser.Dto
 {
     public class Chapter
     {
