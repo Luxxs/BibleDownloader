@@ -58,6 +58,9 @@ namespace BibleParser
                 throw new Exception("The verse is out of chapter");
             }
 
+            // Remove space at the end of every verse
+            verseLength = verseLength - Encoding.UTF8.GetBytes(" ").Length;
+
             if (verseStartPosition + verseLength > chapterBytes.Length)
             {
                 // we can fix this
@@ -93,7 +96,7 @@ namespace BibleParser
                         Content = new List<IVerseElement>()
                     };
 
-                    Stack<IVerseElement> elements = new Stack<IVerseElement>();
+                    Stack<IVerseElement> elementsToAdd = new Stack<IVerseElement>();
 
                     try
                     {
@@ -104,9 +107,9 @@ namespace BibleParser
                             {
                                 case XmlNodeType.SignificantWhitespace:
                                 case XmlNodeType.Whitespace:
-                                    if (elements.Any())
-                                        verse.Content.Add(elements.Pop());
-                                    elements.Push(new TextElement { Text = reader.Value });
+                                    if (elementsToAdd.Any())
+                                        verse.Content.Add(elementsToAdd.Pop());
+                                    elementsToAdd.Push(new TextElement { Text = reader.Value });
                                     break;
 
                                 case XmlNodeType.Element:
@@ -119,45 +122,46 @@ namespace BibleParser
 
                                         case "title":
                                             //Should be always in the beginning of a verse
-                                            elements.Push(new Title());
+                                            elementsToAdd.Push(new Title());
                                             break;
 
                                         case "rf":
                                         case "note":
-                                            verse.Content.Add(elements.Pop());
-                                            elements.Push(new Note
+                                            if(elementsToAdd.Any())
+                                                verse.Content.Add(elementsToAdd.Pop());
+                                            elementsToAdd.Push(new Note
                                             {
                                                 Identifier = reader.GetAttribute("n")
                                             });
                                             break;
 
                                         case "hi":
-                                            elements.Push(new Highlight
+                                            elementsToAdd.Push(new Highlight
                                             {
                                                 Type = reader.GetAttribute("type")
                                             });
                                             break;
 
                                         case "br":
-                                            if (elements.Any())
-                                                verse.Content.Add(elements.Pop());
+                                            if (elementsToAdd.Any())
+                                                verse.Content.Add(elementsToAdd.Pop());
                                             verse.Content.Add(new LineBreak());
                                             break;
 
                                         case "p":
-                                            if (elements.Any())
-                                                verse.Content.Add(elements.Pop());
+                                            if (elementsToAdd.Any())
+                                                verse.Content.Add(elementsToAdd.Pop());
                                             var paragraphSeparator = new ParagraphSeparator();
                                             if (reader.IsEmptyElement)
                                                 verse.Content.Add(paragraphSeparator);
                                             else
-                                                elements.Push(paragraphSeparator);
+                                                elementsToAdd.Push(paragraphSeparator);
                                             break;
 
                                         case "transchange":
-                                            if (elements.Any())
-                                                verse.Content.Add(elements.Pop());
-                                            elements.Push(new ChangeInTranslation {
+                                            if (elementsToAdd.Any())
+                                                verse.Content.Add(elementsToAdd.Pop());
+                                            elementsToAdd.Push(new ChangeInTranslation {
                                                 Type = reader.GetAttribute("type")
                                             });
                                             break;
@@ -178,16 +182,16 @@ namespace BibleParser
                                     break;
 
                                 case XmlNodeType.Text:
-                                    var textElement = new TextElement { Text = reader.Value };
-                                    if (elements.Any())
+                                    var newTextElement = new TextElement { Text = reader.Value };
+                                    if (elementsToAdd.Any())
                                     {
-                                        if (elements.Peek() is IContentVerseElement)
-                                            (elements.Peek() as IContentVerseElement).Content.Add(textElement);
-                                        else
-                                            (elements.Peek() as ITextVerseElement).Text += reader.Value;
+                                        if (elementsToAdd.Peek() is IContentVerseElement contentElementToAdd)
+                                            contentElementToAdd.Content.Add(newTextElement);
+                                        else if (elementsToAdd.Peek() is ITextVerseElement textElementToAdd)
+                                            textElementToAdd.Text += reader.Value;
                                     }
                                     else
-                                        elements.Push(textElement);
+                                        elementsToAdd.Push(newTextElement);
                                     break;
 
                                 case XmlNodeType.EndElement:
@@ -198,11 +202,11 @@ namespace BibleParser
                                         case "note":
                                         case "hi":
                                         case "p":
-                                            var endingElement = elements.Pop();
-                                            if (elements.Any() && elements.Peek() is IContentVerseElement)
-                                                (elements.Peek() as IContentVerseElement).Content.Add(endingElement);
+                                            var finishedElement = elementsToAdd.Pop();
+                                            if (elementsToAdd.Any() && elementsToAdd.Peek() is IContentVerseElement currentContentElement)
+                                                currentContentElement.Content.Add(finishedElement);
                                             else
-                                                verse.Content.Add(endingElement);
+                                                verse.Content.Add(finishedElement);
                                             break;
 
                                         case "reference":
@@ -222,7 +226,7 @@ namespace BibleParser
                                     break;
                             }
                         }
-                        verse.Content.Add(elements.Pop());
+                        verse.Content.Add(elementsToAdd.Pop());
                     }
                     catch (Exception e)
                     {
@@ -247,7 +251,7 @@ namespace BibleParser
             stream.Write(xmlPrefix, 0, xmlPrefix.Length);
         }
 
-        static string convertNoteNumToId(int noteIdentifier)
+        string convertNoteNumToId(int noteIdentifier)
         {
             string base26 = string.Empty;
             do
@@ -257,33 +261,7 @@ namespace BibleParser
             }
             while (noteIdentifier > 0);
 
-            return "(" + Reverse(base26) + ")";
-        }
-
-        static string Reverse(string input)
-        {
-            char[] output = new char[input.Length];
-
-            int forwards = 0;
-            int backwards = input.Length - 1;
-
-            do
-            {
-                output[forwards] = input[backwards];
-                output[backwards] = input[forwards];
-            } while (++forwards <= --backwards);
-
-            return new String(output);
-        }
-
-        // TODO: Use it in some HTML renderer
-        byte[] FixEtcetera(Stream stream, byte[] chapterBytes)
-        {
-            //unfortunately "&c." means "etcetera" in old english
-            //and "&c." really messes up html since & is a reserved word.
-            string beforeFix = Encoding.UTF8.GetString(chapterBytes);
-            string afterFix = beforeFix.Replace("&c.", "&amp;c.");
-            return Encoding.UTF8.GetBytes(afterFix);
+            return "(" + base26.Reverse() + ")";
         }
     }
 }

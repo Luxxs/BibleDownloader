@@ -13,7 +13,7 @@ namespace BibleReaderConsole
 {
     class BibleFileManager : BibleFileManagerBase, IBibleFileManager
     {
-        DirectoryInfo rootFolder = new DirectoryInfo("Bibles");
+        readonly DirectoryInfo rootFolder = new DirectoryInfo("Bibles");
 
         /// <summary>
         /// Unzips bible files from Stream.
@@ -23,23 +23,18 @@ namespace BibleReaderConsole
             using (var zipStream = new ZipArchive(responseStream))
             {
                 ReadOnlyCollection<ZipArchiveEntry> entries = zipStream.Entries;
-                foreach (ZipArchiveEntry zipArchiveEntry in entries)
+                foreach (ZipArchiveEntry zipEntry in entries)
                 {
-                    if (!IsZipEntryDirectory(zipArchiveEntry))
+                    if (!IsZipEntryDirectory(zipEntry))
                     {
-                        var normalizedZipEntryPath = NormalizePath(zipArchiveEntry.FullName);
+                        var normalizedZipEntryPath = NormalizePath(zipEntry.FullName);
                         CreatePathInStorageIfNotExists(normalizedZipEntryPath);
                         var filePath = Path.Combine(rootFolder.FullName, normalizedZipEntryPath);
-                        using (FileStream fileStream = File.Create(filePath, 10000, FileOptions.None))
+                        using (FileStream fileStream = File.Create(filePath))
                         {
-                            var buffer = new byte[10000];
-                            using (Stream zipEntryStream = zipArchiveEntry.Open())
+                            using (Stream zipEntryStream = zipEntry.Open())
                             {
-                                int bytesRead;
-                                while ((bytesRead = zipEntryStream.Read(buffer, 0, buffer.GetUpperBound(0))) > 0)
-                                {
-                                    fileStream.Write(buffer, 0, bytesRead);
-                                }
+                                await zipEntryStream.CopyToAsync(fileStream);
                             }
                         }
                     }
