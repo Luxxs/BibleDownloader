@@ -293,7 +293,7 @@ namespace ICSharpCode.SharpZipLib.Tar
         /// Closes this stream. Calls the TarBuffer's close() method.
         /// The underlying stream is closed by the TarBuffer.
         /// </summary>
-        public void Close()
+        public override void Close()
         {
             tarBuffer.Close();
         }

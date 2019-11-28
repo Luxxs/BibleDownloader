@@ -428,7 +428,7 @@ namespace Sword
         private void AdjustName()
         {
             // If there is no name then use the internal name
-            if (this._table[ConfigEntryType.Description] == null)
+            if (this._table.ContainsKey(ConfigEntryType.Description))
             {
                 //Logger.Fail("Malformed conf file for " + @internal + " no " + ConfigEntryType.DESCRIPTION.Name + " found. Using internal of " + @internal);
                 this.Add(ConfigEntryType.Description, this._internal);

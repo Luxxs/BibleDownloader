@@ -12,7 +12,7 @@ namespace BibleLoader
 {
     public class BibleDownloader : IBibleDownloader
     {
-        const string CrosswireServer = "http://www.crosswire.org";
+        const string CrosswireServer = "http://www2.crosswire.org";
         const string MetadatasUrl = "/ftpmirror/pub/sword/raw/mods.d.tar.gz";
         const string BookPackagesDirectory = "/ftpmirror/pub/sword/packages/rawzip";
         const string ZipExtension = ".zip";
