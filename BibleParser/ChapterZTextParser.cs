@@ -23,7 +23,6 @@ namespace BibleParser
         {
             #if DEBUG
             var rawChapter = System.Text.Encoding.UTF8.GetString(chapterBytes);
-            Console.WriteLine(rawChapter);
             #endif
 
             var chapter = new Chapter
@@ -96,7 +95,6 @@ namespace BibleParser
 
                 #if DEBUG
                 string rawVerseXml = new StreamReader(verseXml).ReadToEnd();
-                Console.WriteLine(rawVerseXml);
                 verseXml.Position = 0;
                 #endif
 
@@ -241,7 +239,9 @@ namespace BibleParser
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine($"{this.GetType().FullName}.{System.Reflection.MethodBase.GetCurrentMethod().Name}: {e.Message} IN: {reader.Value}");
+                        #if DEBUG
+                        Debug.WriteLine($"{this.GetType().FullName}.{System.Reflection.MethodBase.GetCurrentMethod().Name}: {e.Message} IN: {rawVerseXml}");
+                        #endif
                     }
                     return verse;
                 }

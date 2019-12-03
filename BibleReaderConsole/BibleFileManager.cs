@@ -49,31 +49,32 @@ namespace BibleReaderConsole
         {
             var fileChecks = new List<bool>
             {
-                new FileInfo(CreateVersificationFilePath(swordBookMetaData, Testament.Old)).Exists,
-                new FileInfo(CreateBzsFilePath(swordBookMetaData, Testament.Old)).Exists,
-                new FileInfo(CreateBzzFilePath(swordBookMetaData, Testament.Old)).Exists,
-                new FileInfo(CreateVersificationFilePath(swordBookMetaData, Testament.New)).Exists,
-                new FileInfo(CreateBzsFilePath(swordBookMetaData, Testament.New)).Exists,
-                new FileInfo(CreateBzzFilePath(swordBookMetaData, Testament.New)).Exists
+                new FileInfo(GetConfPath(swordBookMetaData)).Exists,
+                new FileInfo(GetVersificationFilePath(swordBookMetaData, Testament.Old)).Exists,
+                new FileInfo(GetBzsFilePath(swordBookMetaData, Testament.Old)).Exists,
+                new FileInfo(GetBzzFilePath(swordBookMetaData, Testament.Old)).Exists,
+                new FileInfo(GetVersificationFilePath(swordBookMetaData, Testament.New)).Exists,
+                new FileInfo(GetBzsFilePath(swordBookMetaData, Testament.New)).Exists,
+                new FileInfo(GetBzzFilePath(swordBookMetaData, Testament.New)).Exists
             };
             return fileChecks.All(x => x);
         }
 
         public async Task<Stream> OpenBzsFileForReadAsync(SwordBookMetaData swordBookMetaData, Testament testament)
         {
-            string filePath = CreateBzsFilePath(swordBookMetaData, testament);
+            string filePath = GetBzsFilePath(swordBookMetaData, testament);
             return File.OpenRead(filePath);
         }
 
         public async Task<Stream> OpenBzzFileForReadAsync(SwordBookMetaData swordBookMetaData, Testament testament)
         {
-            string filePath = CreateBzzFilePath(swordBookMetaData, testament);
+            string filePath = GetBzzFilePath(swordBookMetaData, testament);
             return File.OpenRead(filePath);
         }
 
         public async Task<Stream> OpenVersificationFileForReadAsync(SwordBookMetaData swordBookMetaData, Testament testament)
         {
-            string filePath = CreateVersificationFilePath(swordBookMetaData, testament);
+            string filePath = GetVersificationFilePath(swordBookMetaData, testament);
             return File.OpenRead(filePath);
         }
 
@@ -94,16 +95,20 @@ namespace BibleReaderConsole
         string NormalizePath(string path)
             => path.Replace('/', Path.DirectorySeparatorChar);
 
-        new string CreateVersificationFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
+        new string GetVersificationFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
             => Path.Combine(rootFolder.FullName,
-                NormalizePath(base.CreateVersificationFilePath(swordBookMetaData, testament)));
+                NormalizePath(base.GetVersificationFilePath(swordBookMetaData, testament)));
 
-        new string CreateBzsFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
+        new string GetBzsFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
             => Path.Combine(rootFolder.FullName,
-                NormalizePath(base.CreateBzsFilePath(swordBookMetaData, testament)));
+                NormalizePath(base.GetBzsFilePath(swordBookMetaData, testament)));
 
-        new string CreateBzzFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
+        new string GetBzzFilePath(SwordBookMetaData swordBookMetaData, Testament testament)
             => Path.Combine(rootFolder.FullName,
-                NormalizePath(base.CreateBzzFilePath(swordBookMetaData, testament)));
+                NormalizePath(base.GetBzzFilePath(swordBookMetaData, testament)));
+
+        new string GetConfPath(SwordBookMetaData swordBookMetaData)
+            => Path.Combine(rootFolder.FullName,
+                NormalizePath(base.GetConfPath(swordBookMetaData)));
     }
 }
