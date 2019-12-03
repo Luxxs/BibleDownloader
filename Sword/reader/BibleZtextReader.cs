@@ -71,7 +71,7 @@ namespace Sword.reader
 
         #region Public Methods and Operators
 
-        public string ToString()
+        public override string ToString()
         {
             return this.ChapterNum + ";" + this.VerseNum;
         }
