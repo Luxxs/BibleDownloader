@@ -44,13 +44,14 @@ namespace BibleLoader
                 //zipStream = string.IsNullOrEmpty(this.Serial.CipherKey) ? new ZInputStream(fs) : new ZInputStream(new SapphireStream(fs, this.Serial.CipherKey));
                 using (ZlibStream zipStream = new ZlibStream(fileStream, CompressionMode.Decompress))
                 {
+                    const int bufferSize = 10000;
                     int totalBytesRead = 0;
                     int totalBytesCopied = 0;
                     int len = 0;
-                    byte[] buffer = new byte[10000];
+                    byte[] buffer = new byte[bufferSize];
                     while (true)
                     {
-                        len = zipStream.Read(buffer, 0, 10000);
+                        len = zipStream.Read(buffer, 0, bufferSize);
                         if (len <= 0)
                         {
                             // we should never come to this point.  Just here as a safety procaution

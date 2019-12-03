@@ -10,7 +10,7 @@ namespace BibleLoader.Interfaces
         /// <summary>
         /// Unzips bible files from Stream.
         /// </summary>
-        Task SaveBible(Stream responseStream);
+        Task SaveBibleAsync(Stream responseStream);
 
         /// <summary>
         /// Returs true if all bible files are present in filesystem.

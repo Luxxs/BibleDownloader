@@ -28,16 +28,16 @@ namespace BibleManager
             this.bibleParserFactory = bibleParserFactory;
         }
 
-        public async Task<List<SwordBookMetaData>> DownloadBibleMetaDatas()
+        public async Task<List<SwordBookMetaData>> DownloadBibleMetaDatasAsync()
             => await bibleDownloader.DownloadBookMetadatasAsync();
 
         public async Task DownloadBibleAsync(SwordBookMetaData swordBookMetaData)
         {
             Stream downloadedBible = await bibleDownloader.DownloadBookAsync(swordBookMetaData);
-            await bibleFileManager.SaveBible(downloadedBible);
+            await bibleFileManager.SaveBibleAsync(downloadedBible);
         }
 
-        public async Task<bool> IsBibleSaved(SwordBookMetaData swordBookMetaData)
+        public async Task<bool> IsBibleSavedAsync(SwordBookMetaData swordBookMetaData)
             => bibleFileManager.IsBibleSaved(swordBookMetaData);
 
         public async Task<Chapter> GetChapterAsync(SwordBookMetaData swordBookMetaData, string shortBookName, int chapterNumber)

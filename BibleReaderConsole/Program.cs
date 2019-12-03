@@ -26,10 +26,10 @@ namespace BibleReaderConsole
             var bibleParserFactory = new BibleParserFactory();
             IBibleManager bibleManager = new BibleManager.BibleManager(bibleDownloader, bibleFileManager, bibleLoader, bibleParserFactory);
 
-            List<SwordBookMetaData> metadatas = await bibleManager.DownloadBibleMetaDatas();
+            List<SwordBookMetaData> metadatas = await bibleManager.DownloadBibleMetaDatasAsync();
             SwordBookMetaData bibleMetadata = metadatas.Find(x => x.InternalName == "czecsp");
 
-            if (!await bibleManager.IsBibleSaved(bibleMetadata))
+            if (!await bibleManager.IsBibleSavedAsync(bibleMetadata))
             {
                 await bibleManager.DownloadBibleAsync(bibleMetadata);
             }

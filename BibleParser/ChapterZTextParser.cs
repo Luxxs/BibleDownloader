@@ -21,6 +21,11 @@ namespace BibleParser
 
         public Chapter ParseChapterAsync(int chapterNumber, byte[] chapterBytes, ChapterPosition versePositionsInChapter)
         {
+            #if DEBUG
+            var rawChapter = System.Text.Encoding.UTF8.GetString(chapterBytes);
+            Console.WriteLine(rawChapter);
+            #endif
+
             var chapter = new Chapter
             {
                 Number = chapterNumber,
@@ -60,9 +65,6 @@ namespace BibleParser
                 throw new Exception("The verse is out of chapter");
             }
 
-            // Remove space at the end of every verse
-            verseLength = verseLength - Encoding.UTF8.GetBytes(" ").Length;
-
             if (verseStartPosition + verseLength > chapterBytes.Length)
             {
                 // we can fix this
@@ -91,6 +93,13 @@ namespace BibleParser
                 {
                     IgnoreWhitespace = false
                 };
+
+                #if DEBUG
+                string rawVerseXml = new StreamReader(verseXml).ReadToEnd();
+                Console.WriteLine(rawVerseXml);
+                verseXml.Position = 0;
+                #endif
+
                 using (XmlReader reader = XmlReader.Create(verseXml, settings))
                 {
                     var verse = new Verse
@@ -232,7 +241,7 @@ namespace BibleParser
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine("BibleZtextReader.parseOsisText " + e.Message);
+                        Debug.WriteLine($"{this.GetType().FullName}.{System.Reflection.MethodBase.GetCurrentMethod().Name}: {e.Message} IN: {reader.Value}");
                     }
                     return verse;
                 }

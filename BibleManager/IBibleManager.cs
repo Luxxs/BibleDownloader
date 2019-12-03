@@ -7,9 +7,9 @@ namespace BibleManager
 {
     public interface IBibleManager
     {
-        Task<List<SwordBookMetaData>> DownloadBibleMetaDatas();
+        Task<List<SwordBookMetaData>> DownloadBibleMetaDatasAsync();
         Task DownloadBibleAsync(SwordBookMetaData swordBookMetaData);
-        Task<bool> IsBibleSaved(SwordBookMetaData swordBookMetaData);
+        Task<bool> IsBibleSavedAsync(SwordBookMetaData swordBookMetaData);
         Task<Chapter> GetChapterAsync(SwordBookMetaData swordBookMetaData, string shortBookName, int chapterNumber);
     }
 }

@@ -18,7 +18,7 @@ namespace BibleReaderConsole
         /// <summary>
         /// Unzips bible files from Stream.
         /// </summary>
-        public async Task SaveBible(Stream responseStream)
+        public async Task SaveBibleAsync(Stream responseStream)
         {
             using (var zipStream = new ZipArchive(responseStream))
             {
